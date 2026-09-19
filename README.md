@@ -39,7 +39,11 @@ The application follows a standard layered architecture:
 - `com.workflow.service`: Core business logic
 
 ## 7. Database Design
-*(To be implemented in later phases)*
+- **departments**: Core department details.
+- **employees**: User credentials, roles, and department mapping.
+- **leave_balances**: 1-to-1 mapping with employees tracking available leave days.
+- **leave_requests**: Records of leave, associated with an employee and optionally a reviewing manager.
+- **tasks**: Workflow items with assignees, creators, priorities, and statuses.
 
 ## 8. API Documentation
 *(To be implemented in later phases)*
