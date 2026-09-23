@@ -54,6 +54,18 @@
 		</dependency>
 		
 		<dependency><groupId>org.springframework.security</groupId><artifactId>spring-security-test</artifactId><scope>test</scope></dependency><dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId><scope>test</scope></dependency>
+		<dependency>
+			<groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
+			<version>7.10.2</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.support</groupId>
+			<artifactId>testng-engine</artifactId>
+			<version>1.0.6</version>
+			<scope>test</scope>
+		</dependency>
 		
 		
 	    <dependency>

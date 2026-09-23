@@ -98,5 +98,30 @@ Use Maven to start the application:
 - **Verification performed**: Maven compilation succeeds. Basic structure is in place.
 - **Current status**: Complete.
 
+### Phase 3 — Service Layer and Business Workflows
+- **Objective**: Introduce application services and enforce core business rules for employees, leaves, and tasks.
+- **What was implemented**:
+  - Added service layer contracts and implementations for employee, leave, and task workflows.
+  - Added business exceptions for missing resources, invalid requests, duplicate data, invalid task transitions, and insufficient leave balance.
+  - Implemented leave creation, retrieval, approval, and rejection flows with transactional balance updates.
+  - Implemented task creation, assignment, status transitions, and team/assigned task retrieval.
+  - Implemented employee creation, lookup, updates, and department association logic.
+  - Added service-level tests using TestNG and Mockito for the key business rules.
+- **Important technical decisions**:
+  - Used constructor-based dependency injection for all services.
+  - Kept business rules in the service layer so controllers can remain thin in later phases.
+  - Enforced valid leave and task state transitions in code rather than relying on callers.
+  - Used transactional methods for operations that update more than one record.
+- **Files/modules added or changed**:
+  - Created `com.workflow.service` interfaces and `com.workflow.service.impl` implementations.
+  - Created `com.workflow.exception` business exception hierarchy.
+  - Added TestNG/Mockito service tests under `src/test/java/com/workflow/service`.
+  - Updated `pom.xml` to support TestNG execution.
+- **Database changes**: No new tables or columns; this phase uses the existing entity model and repository layer.
+- **APIs added/changed**: None yet. This phase prepares the business logic that future controllers will expose.
+- **Tests added**: Service tests covering valid leave creation, invalid leave dates, leave approval, leave rejection, insufficient leave balance, and invalid task transitions.
+- **Verification performed**: Targeted Maven test run for the new service tests passed.
+- **Current status**: Complete.
+
 ## 17. Future Enhancements
 *(To be defined)*
