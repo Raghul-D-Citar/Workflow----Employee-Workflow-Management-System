@@ -159,5 +159,40 @@ Use Maven to start the application:
   - `TaskControllerTest` (10 tests covering creation, validation error, retrieval, team query, assignment, and status transitions).
 - **Current status**: Complete.
 
+### Phase 5 — JWT Authentication
+- **Objective**: Implement stateless JWT authentication using Spring Security, including token issuance, validation, password hashing, and endpoint authorization filters.
+- **Authentication Flow**:
+  1. **Registration** (`POST /api/auth/register`):
+     - Validates payload (`username`, `email`, `password`, `firstName`, `lastName`).
+     - Checks uniqueness of username and email.
+     - Hashes password using `BCryptPasswordEncoder`.
+     - Assigns role (defaults to `Role.EMPLOYEE` if omitted).
+     - Automatically provisions default `LeaveBalance` (15 annual, 10 sick, 5 casual).
+     - Issues a signed JWT and returns `AuthResponse`.
+  2. **Login** (`POST /api/auth/login`):
+     - Validates credentials via `AuthenticationManager`.
+     - Generates HMAC-SHA256 signed JWT containing `username`, `role`, and `employeeId` claims.
+     - Returns `AuthResponse` (`token`, `tokenType: "Bearer"`, user details).
+- **JWT Lifecycle**:
+  - Generated using JJWT 0.12 (`Jwts.builder()`, signed with HMAC-SHA256).
+  - Configurable expiration (default 24 hours, test 1 hour).
+  - Validated by `JwtTokenProvider.validateToken()` with secret key check and expiration verification.
+- **Password Hashing**:
+  - Passwords hashed using `BCryptPasswordEncoder` bean.
+- **Security Filter & Stateless Session**:
+  - `JwtAuthenticationFilter` intercepts requests, parses `Authorization: Bearer <token>`, validates the token, extracts `username`, loads `UserDetails` via `CustomUserDetailsService`, and sets authentication in `SecurityContextHolder`.
+  - Application session management configured to `SessionCreationPolicy.STATELESS`.
+  - Custom `JwtAuthenticationEntryPoint` formats unauthenticated rejections as consistent JSON (`401 Unauthorized`).
+- **Public & Protected Endpoints**:
+  - **Public**: `/api/auth/**` (register, login) and `/api/health`.
+  - **Protected**: `/api/employees/**`, `/api/leaves/**`, `/api/tasks/**` (requires `Authorization: Bearer <token>`).
+- **Configuration**:
+  - Externalized via `jwt.secret` (env `JWT_SECRET`) and `jwt.expiration-ms` (env `JWT_EXPIRATION_MS`).
+- **Tests**:
+  - `AuthServiceTest` (5 tests covering registration, duplicate handling, login, and bad credentials).
+  - `AuthControllerTest` (5 tests covering register/login request/response and bean validation).
+  - `JwtSecurityIntegrationTest` (5 tests verifying public endpoint access, 401 on unauthenticated access, 401 on invalid token, 200 with valid token, and full end-to-end register/login/authenticated flow).
+- **Current status**: Complete.
+
 ## 17. Future Enhancements
 *(To be defined)*
