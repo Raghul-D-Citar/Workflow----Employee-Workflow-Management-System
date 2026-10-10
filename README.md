@@ -121,6 +121,42 @@ Use Maven to start the application:
 - **APIs added/changed**: None yet. This phase prepares the business logic that future controllers will expose.
 - **Tests added**: Service tests covering valid leave creation, invalid leave dates, leave approval, leave rejection, insufficient leave balance, and invalid task transitions.
 - **Verification performed**: Targeted Maven test run for the new service tests passed.
+### Phase 4 — REST API Layer
+- **Objective**: Expose standard REST endpoints and request/response DTOs for the Employee, Leave, and Task services with validation and centralized error handling.
+- **What was implemented**:
+  - Implemented REST controllers: `EmployeeController`, `LeaveController`, and `TaskController`.
+  - Created encapsulated request and response DTOs under `com.workflow.dto` preventing JPA entity leaking.
+  - Implemented Jakarta Bean Validation on incoming DTOs (`@NotNull`, `@NotBlank`, `@Size`, `@Email`).
+  - Added centralized error handling via `GlobalExceptionHandler` (`@RestControllerAdvice`) returning uniform `ErrorResponse` payloads.
+  - Added lookup methods `getLeaveRequest` and `getTask` to `LeaveService` and `TaskService` respectively.
+  - Added controller unit tests using TestNG, MockMvc, and Mockito.
+- **Endpoint List**:
+  - **Employees**:
+    - `GET /api/employees`: List all employees (Status `200 OK`, returns `List<EmployeeResponse>`).
+    - `GET /api/employees/{id}`: Retrieve employee by ID (Status `200 OK`, returns `EmployeeResponse`, `404 Not Found` if missing).
+    - `POST /api/employees`: Create new employee (Status `201 Created`, accepts `EmployeeRequest`, returns `EmployeeResponse`, `400 Bad Request` on validation failure, `409 Conflict` on duplicate).
+    - `PUT /api/employees/{id}`: Update employee details (Status `200 OK`, accepts `EmployeeUpdateRequest`, returns `EmployeeResponse`).
+  - **Leaves**:
+    - `POST /api/leaves`: Submit new leave request (Status `201 Created`, accepts `LeaveCreateRequest`, returns `LeaveResponse`).
+    - `GET /api/leaves/my`: Retrieve employee's leave requests (Status `200 OK`, accepts `employeeId` query/header, returns `List<LeaveResponse>`).
+    - `GET /api/leaves/pending`: Retrieve all pending leave requests (Status `200 OK`, returns `List<LeaveResponse>`).
+    - `GET /api/leaves/{id}`: Retrieve leave request by ID (Status `200 OK`, returns `LeaveResponse`, `404 Not Found` if missing).
+    - `PUT /api/leaves/{id}/approve`: Approve pending leave request (Status `200 OK`, accepts `LeaveDecisionRequest`, returns `LeaveResponse`, `400 Bad Request` if insufficient balance or not pending).
+    - `PUT /api/leaves/{id}/reject`: Reject pending leave request (Status `200 OK`, accepts `LeaveDecisionRequest`, returns `LeaveResponse`, `400 Bad Request` if not pending).
+  - **Tasks**:
+    - `POST /api/tasks`: Create a new unassigned task (Status `201 Created`, accepts `TaskCreateRequest`, returns `TaskResponse`).
+    - `GET /api/tasks/my`: Retrieve tasks assigned to employee (Status `200 OK`, accepts `employeeId` query/header, returns `List<TaskResponse>`).
+    - `GET /api/tasks/{id}`: Retrieve task by ID (Status `200 OK`, returns `TaskResponse`, `404 Not Found` if missing).
+    - `GET /api/tasks/team`: Retrieve department tasks (Status `200 OK`, accepts `departmentId` query param, returns `List<TaskResponse>`).
+    - `PUT /api/tasks/{id}/status`: Progress task through valid lifecycle states (Status `200 OK`, accepts `TaskStatusUpdateRequest`, returns `TaskResponse`, `400 Bad Request` on invalid state transition).
+    - `PUT /api/tasks/{id}/assign`: Assign task to an employee (Status `200 OK`, accepts `assigneeId` query param, returns `TaskResponse`).
+- **Validation & Status Codes**:
+  - Inputs validated with `@Valid` on controller methods; field errors formatted in `ErrorResponse.validationErrors`.
+  - HTTP `200 OK`, `201 Created`, `400 Bad Request`, `404 Not Found`, `409 Conflict`, `500 Internal Server Error`.
+- **Tests**:
+  - `EmployeeControllerTest` (7 tests covering listing, retrieval, creation, validation error, conflict, and update).
+  - `LeaveControllerTest` (11 tests covering creation, validation error, retrieval, pending query, approval, rejection, insufficient balance, and invalid transition).
+  - `TaskControllerTest` (10 tests covering creation, validation error, retrieval, team query, assignment, and status transitions).
 - **Current status**: Complete.
 
 ## 17. Future Enhancements

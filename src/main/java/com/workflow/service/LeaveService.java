@@ -13,6 +13,8 @@ public interface LeaveService {
 
     List<LeaveRequest> getPendingLeaveRequests();
 
+    LeaveRequest getLeaveRequest(Long leaveRequestId);
+
     List<LeaveRequest> getTeamLeaveRequests(Long departmentId);
 
     LeaveRequest approveLeave(Long leaveRequestId, Long reviewerId, String reviewComment);

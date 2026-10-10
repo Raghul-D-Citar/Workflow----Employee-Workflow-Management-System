@@ -65,6 +65,12 @@ public class LeaveServiceImpl implements LeaveService {
     }
 
     @Override
+    public LeaveRequest getLeaveRequest(Long leaveRequestId) {
+        return leaveRequestRepository.findById(leaveRequestId)
+                .orElseThrow(() -> new ResourceNotFoundException("Leave request not found: " + leaveRequestId));
+    }
+
+    @Override
     public List<LeaveRequest> getTeamLeaveRequests(Long departmentId) {
         return leaveRequestRepository.findByDepartmentId(departmentId);
     }

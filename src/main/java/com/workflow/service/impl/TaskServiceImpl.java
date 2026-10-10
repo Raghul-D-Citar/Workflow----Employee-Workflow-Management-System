@@ -87,7 +87,8 @@ public class TaskServiceImpl implements TaskService {
         return taskRepository.findByDepartmentId(departmentId);
     }
 
-    private Task getTask(Long taskId) {
+    @Override
+    public Task getTask(Long taskId) {
         return taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found: " + taskId));
     }

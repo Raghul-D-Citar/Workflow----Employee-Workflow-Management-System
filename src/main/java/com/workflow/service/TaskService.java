@@ -13,6 +13,8 @@ public interface TaskService {
 
     List<Task> getAssignedTasks(Long employeeId);
 
+    Task getTask(Long taskId);
+
     Task updateTaskStatus(Long taskId, TaskStatus taskStatus);
 
     List<Task> getTeamTasks(Long departmentId);
