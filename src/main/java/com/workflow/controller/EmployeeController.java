@@ -5,9 +5,12 @@ import com.workflow.dto.employee.EmployeeResponse;
 import com.workflow.dto.employee.EmployeeUpdateRequest;
 import com.workflow.entity.Employee;
 import com.workflow.service.EmployeeService;
+import com.workflow.exception.InvalidRequestException;
+import com.workflow.security.CustomUserDetails;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,6 +32,15 @@ public class EmployeeController {
                 .map(EmployeeResponse::fromEntity)
                 .toList();
         return ResponseEntity.ok(employees);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<EmployeeResponse> getMyProfile(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            throw new InvalidRequestException("Authenticated user details not found");
+        }
+        Employee employee = employeeService.getEmployee(userDetails.getId());
+        return ResponseEntity.ok(EmployeeResponse.fromEntity(employee));
     }
 
     @GetMapping("/{id}")

@@ -194,5 +194,46 @@ Use Maven to start the application:
   - `JwtSecurityIntegrationTest` (5 tests verifying public endpoint access, 401 on unauthenticated access, 401 on invalid token, 200 with valid token, and full end-to-end register/login/authenticated flow).
 - **Current status**: Complete.
 
+### Phase 6 — Role-Based Authorization
+- **Objective**: Implement fine-grained role-based access control (RBAC) across endpoints and business operations using Spring Security.
+- **Roles**:
+  - `EMPLOYEE`: General staff member.
+  - `MANAGER`: Team supervisor with review and assignment capabilities.
+  - `ADMIN`: System administrator with full management access.
+- **Permissions Matrix**:
+  - **EMPLOYEE**:
+    - View own profile (`GET /api/employees/me`).
+    - Submit leave requests (`POST /api/leaves`).
+    - View own leave history (`GET /api/leaves/my`).
+    - View assigned tasks (`GET /api/tasks/my`).
+    - Progress assigned task statuses (`PUT /api/tasks/{id}/status`).
+  - **MANAGER**:
+    - All employee read permissions plus:
+    - View organization/department employees (`GET /api/employees`).
+    - View pending leave requests (`GET /api/leaves/pending`).
+    - Approve or reject leave requests (`PUT /api/leaves/{id}/approve`, `PUT /api/leaves/{id}/reject`).
+    - Create and assign workflow tasks (`POST /api/tasks`, `PUT /api/tasks/{id}/assign`).
+    - View team tasks (`GET /api/tasks/team`).
+  - **ADMIN**:
+    - All manager permissions plus:
+    - Full employee lifecycle management (`POST /api/employees`, `PUT /api/employees/{id}`).
+- **Authorization Strategy**:
+  - Enabled `@EnableMethodSecurity` and configured route-level matchers in `SecurityConfig`.
+  - Roles granted as `ROLE_EMPLOYEE`, `ROLE_MANAGER`, `ROLE_ADMIN` on `CustomUserDetails`.
+  - Configured `JwtAccessDeniedHandler` to intercept unauthorized access attempts and return uniform `403 Forbidden` JSON responses.
+  - Configured `JwtAuthenticationEntryPoint` to return uniform `401 Unauthorized` JSON responses for unauthenticated requests.
+- **Security Tests**:
+  - `JwtSecurityIntegrationTest` (9 integration tests covering):
+    - Unauthenticated request rejection (`401 Unauthorized`).
+    - Invalid JWT rejection (`401 Unauthorized`).
+    - Employee allowed operations (`GET /api/employees/me`, `GET /api/leaves/my`, `GET /api/tasks/my` returning `200 OK`).
+    - Employee forbidden from manager operations (`403 Forbidden` on `GET /api/leaves/pending`, `PUT /api/leaves/{id}/approve`, `POST /api/tasks`, `PUT /api/tasks/{id}/assign`, `GET /api/employees`).
+    - Manager allowed operations (`200 OK` on `GET /api/employees`, `GET /api/leaves/pending`, and `201 Created` on `POST /api/tasks`).
+    - Manager forbidden from administrative operations (`403 Forbidden` on `POST /api/employees`).
+    - Admin allowed administrative operations (`201 Created` on `POST /api/employees` and `200 OK` on `GET /api/employees`).
+    - Public health endpoint check (`200 OK`).
+    - End-to-end registration, duplicate rejection, and login flow.
+- **Current status**: Complete.
+
 ## 17. Future Enhancements
 *(To be defined)*
