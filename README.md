@@ -250,5 +250,38 @@ Use Maven to start the application:
   - Validation responses additionally include `validationErrors` when field-level errors are available.
 - **Current status**: Complete.
 
+### Phase 8 — Automated Testing and Quality
+- **Objective**: Perform a dedicated automated testing pass over service, controller, security, and persistence behavior.
+- **Testing strategy**:
+  - TestNG and Mockito are used for service and controller-focused tests.
+  - MockMvc verifies HTTP status codes, validation behavior, authorization responses, and response structures.
+  - Spring Boot integration tests use H2 to exercise the JPA repositories and the complete security filter chain.
+  - The repository integration tests validate actual JPA mappings and custom JPQL queries. They do not claim PostgreSQL-specific coverage.
+- **Unit tests**:
+  - Employee creation, retrieval, update, duplicate handling, and missing-resource behavior.
+  - Leave creation, invalid date handling, approval, rejection, insufficient balance, invalid transitions, missing requests, and persistence-sensitive failure behavior.
+  - Task creation, assignment, valid status transitions, invalid status transitions, and invalid creation with an assignee.
+  - Authentication registration and login behavior.
+- **Controller tests**:
+  - Successful requests and response structures.
+  - Required-field and date validation failures.
+  - Malformed JSON handling.
+  - Not-found, conflict, invalid workflow, and unauthorized business-operation responses.
+- **Security tests**:
+  - Unauthenticated access returns `401 Unauthorized`.
+  - Invalid JWT access returns `401 Unauthorized`.
+  - Authenticated users without sufficient roles return `403 Forbidden`.
+  - Employee, manager, and admin permissions are exercised through the real Spring Security filter chain.
+- **Integration tests**:
+  - Spring context loading.
+  - H2-backed repository queries for departments, employees, leave requests, and tasks.
+  - End-to-end registration, duplicate registration, login, and role-protected API access.
+- **Commands used**:
+  - `mvnw.cmd test`
+- **Actual result**:
+  - Full Maven test suite passed with zero failures and zero errors.
+  - No coverage percentage is claimed because coverage collection was not configured or measured.
+- **Current status**: Complete.
+
 ## 17. Future Enhancements
 *(To be defined)*

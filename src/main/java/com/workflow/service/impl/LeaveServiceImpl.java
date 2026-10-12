@@ -101,13 +101,13 @@ public class LeaveServiceImpl implements LeaveService {
         }
 
         Employee reviewer = getEmployee(reviewerId);
-        leaveRequest.setReviewer(reviewer);
-        leaveRequest.setReviewComment(reviewComment);
-        leaveRequest.setStatus(targetStatus);
-
         if (deductBalance) {
             deductLeaveBalance(leaveRequest);
         }
+
+        leaveRequest.setReviewer(reviewer);
+        leaveRequest.setReviewComment(reviewComment);
+        leaveRequest.setStatus(targetStatus);
 
         return leaveRequestRepository.save(leaveRequest);
     }

@@ -103,6 +103,19 @@ public class AuthControllerTest {
     }
 
     @Test
+    public void malformedJsonReturnsConsistentBadRequest() throws Exception {
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.message").value("Request body is invalid or malformed"))
+                .andExpect(jsonPath("$.path").value("/api/auth/login"));
+    }
+
+    @Test
     public void loginInvalidCredentials() throws Exception {
         String jsonPayload = """
                 {

@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 
 public class TaskServiceTest {
 
@@ -86,6 +87,19 @@ public class TaskServiceTest {
 
         assertThatThrownBy(() -> taskService.updateTaskStatus(10L, TaskStatus.COMPLETED))
                 .isInstanceOf(InvalidStateTransitionException.class);
+    }
+
+    @Test
+    public void validStatusTransitionIsPersisted() {
+        Task task = task();
+        task.setStatus(TaskStatus.ASSIGNED);
+        when(taskRepository.findById(10L)).thenReturn(Optional.of(task));
+        when(taskRepository.save(task)).thenReturn(task);
+
+        Task updated = taskService.updateTaskStatus(10L, TaskStatus.IN_PROGRESS);
+
+        assertThat(updated.getStatus()).isEqualTo(TaskStatus.IN_PROGRESS);
+        verify(taskRepository).save(task);
     }
 
     @Test

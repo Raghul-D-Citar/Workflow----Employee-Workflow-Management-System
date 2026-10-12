@@ -25,6 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 
 public class LeaveServiceTest {
@@ -73,6 +74,18 @@ public class LeaveServiceTest {
         assertThatThrownBy(() -> leaveService.createLeaveRequest(1L, LocalDate.now().plusDays(1), LocalDate.now(), "Vacation"))
                 .isInstanceOf(InvalidRequestException.class)
                 .hasMessageContaining("Start date cannot be after end date");
+    }
+
+    @Test
+    public void invalidLeaveRequestIsNotPersisted() {
+        Employee employee = employee(1L);
+        when(employeeRepository.findById(1L)).thenReturn(Optional.of(employee));
+
+        assertThatThrownBy(() -> leaveService.createLeaveRequest(
+                1L, LocalDate.now().plusDays(2), LocalDate.now().plusDays(1), "Vacation"))
+                .isInstanceOf(InvalidRequestException.class);
+
+        verify(leaveRequestRepository, never()).save(any(LeaveRequest.class));
     }
 
     @Test
@@ -126,6 +139,9 @@ public class LeaveServiceTest {
 
         assertThatThrownBy(() -> leaveService.approveLeave(10L, 2L, "Approved"))
                 .isInstanceOf(InsufficientLeaveBalanceException.class);
+        assertThat(leaveRequest.getStatus()).isEqualTo(LeaveStatus.PENDING);
+        verify(leaveBalanceRepository, never()).save(any(LeaveBalance.class));
+        verify(leaveRequestRepository, never()).save(any(LeaveRequest.class));
     }
 
     @Test
@@ -140,6 +156,16 @@ public class LeaveServiceTest {
 
         assertThatThrownBy(() -> leaveService.rejectLeave(10L, 2L, "Rejected"))
                 .isInstanceOf(InvalidStateTransitionException.class);
+    }
+
+    @Test
+    public void nonexistentLeaveRequestIsRejectedBeforeReviewerLookup() {
+        when(leaveRequestRepository.findById(404L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> leaveService.approveLeave(404L, 2L, "Approved"))
+                .isInstanceOf(com.workflow.exception.LeaveRequestNotFoundException.class);
+
+        verify(employeeRepository, never()).findById(2L);
     }
 
     private Employee employee(Long id) {

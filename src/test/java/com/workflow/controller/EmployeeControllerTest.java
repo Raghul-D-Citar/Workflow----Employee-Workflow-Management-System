@@ -67,7 +67,10 @@ public class EmployeeControllerTest {
         mockMvc.perform(get("/api/employees/99"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.message").value("Employee not found: 99"));
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.message").value("Employee not found: 99"))
+                .andExpect(jsonPath("$.path").value("/api/employees/99"))
+                .andExpect(jsonPath("$.timestamp").exists());
     }
 
     @Test

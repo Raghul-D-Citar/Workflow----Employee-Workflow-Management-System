@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 
 public class EmployeeServiceTest {
@@ -86,5 +87,52 @@ public class EmployeeServiceTest {
 
         assertThatThrownBy(() -> employeeService.getEmployee(9L))
                 .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    public void updateEmployeeChangesProvidedFieldsAndDepartment() {
+        Employee existing = employee(1L, "old", "old@example.com");
+        Employee update = employee(null, "new", "new@example.com");
+        update.setFirstName("Updated");
+        update.setLastName(null);
+        Department department = new Department("Finance", "Finance");
+        department.setId(8L);
+
+        when(employeeRepository.findById(1L)).thenReturn(Optional.of(existing));
+        when(employeeRepository.findByUsername("new")).thenReturn(Optional.empty());
+        when(employeeRepository.findByEmail("new@example.com")).thenReturn(Optional.empty());
+        when(departmentRepository.findById(8L)).thenReturn(Optional.of(department));
+        when(employeeRepository.save(existing)).thenReturn(existing);
+
+        Employee result = employeeService.updateEmployee(1L, update, 8L);
+
+        assertThat(result.getUsername()).isEqualTo("new");
+        assertThat(result.getEmail()).isEqualTo("new@example.com");
+        assertThat(result.getFirstName()).isEqualTo("Updated");
+        assertThat(result.getLastName()).isEqualTo("Last");
+        assertThat(result.getDepartment()).isEqualTo(department);
+        verify(employeeRepository).save(existing);
+    }
+
+    @Test
+    public void updateEmployeeThrowsWhenTargetDoesNotExist() {
+        when(employeeRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> employeeService.updateEmployee(99L, new Employee(), null))
+                .isInstanceOf(ResourceNotFoundException.class);
+
+        verify(employeeRepository, never()).save(any(Employee.class));
+    }
+
+    private Employee employee(Long id, String username, String email) {
+        Employee employee = new Employee();
+        employee.setId(id);
+        employee.setUsername(username);
+        employee.setEmail(email);
+        employee.setPassword("secret");
+        employee.setFirstName("First");
+        employee.setLastName("Last");
+        employee.setRole(Role.EMPLOYEE);
+        return employee;
     }
 }
