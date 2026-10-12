@@ -3,6 +3,7 @@ package com.workflow.service.impl;
 import com.workflow.entity.Department;
 import com.workflow.entity.Employee;
 import com.workflow.exception.DuplicateResourceException;
+import com.workflow.exception.EmployeeNotFoundException;
 import com.workflow.exception.InvalidRequestException;
 import com.workflow.exception.ResourceNotFoundException;
 import com.workflow.repository.DepartmentRepository;
@@ -38,7 +39,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public Employee getEmployee(Long employeeId) {
         return employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Employee not found: " + employeeId));
+                .orElseThrow(() -> new EmployeeNotFoundException(employeeId));
     }
 
     @Override

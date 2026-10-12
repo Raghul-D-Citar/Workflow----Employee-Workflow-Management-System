@@ -4,9 +4,10 @@ import com.workflow.entity.Employee;
 import com.workflow.entity.LeaveBalance;
 import com.workflow.entity.LeaveRequest;
 import com.workflow.entity.enums.LeaveStatus;
-import com.workflow.exception.InsufficientLeaveBalanceException;
+import com.workflow.exception.InsufficientLeaveException;
 import com.workflow.exception.InvalidRequestException;
-import com.workflow.exception.InvalidStateTransitionException;
+import com.workflow.exception.InvalidLeaveTransitionException;
+import com.workflow.exception.LeaveRequestNotFoundException;
 import com.workflow.exception.ResourceNotFoundException;
 import com.workflow.repository.EmployeeRepository;
 import com.workflow.repository.LeaveBalanceRepository;
@@ -67,7 +68,7 @@ public class LeaveServiceImpl implements LeaveService {
     @Override
     public LeaveRequest getLeaveRequest(Long leaveRequestId) {
         return leaveRequestRepository.findById(leaveRequestId)
-                .orElseThrow(() -> new ResourceNotFoundException("Leave request not found: " + leaveRequestId));
+                .orElseThrow(() -> new LeaveRequestNotFoundException(leaveRequestId));
     }
 
     @Override
@@ -93,10 +94,10 @@ public class LeaveServiceImpl implements LeaveService {
                                               LeaveStatus targetStatus,
                                               boolean deductBalance) {
         LeaveRequest leaveRequest = leaveRequestRepository.findById(leaveRequestId)
-                .orElseThrow(() -> new ResourceNotFoundException("Leave request not found: " + leaveRequestId));
+                .orElseThrow(() -> new LeaveRequestNotFoundException(leaveRequestId));
 
         if (leaveRequest.getStatus() != LeaveStatus.PENDING) {
-            throw new InvalidStateTransitionException("Only pending leave requests can be processed");
+            throw new InvalidLeaveTransitionException("Only pending leave requests can be processed");
         }
 
         Employee reviewer = getEmployee(reviewerId);
@@ -121,7 +122,7 @@ public class LeaveServiceImpl implements LeaveService {
         }
 
         if (leaveBalance.getAnnualLeave() < requestedDays) {
-            throw new InsufficientLeaveBalanceException("Insufficient annual leave balance");
+            throw new InsufficientLeaveException("Insufficient annual leave balance");
         }
 
         leaveBalance.setAnnualLeave((int) (leaveBalance.getAnnualLeave() - requestedDays));

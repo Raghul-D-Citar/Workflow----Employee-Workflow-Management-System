@@ -6,6 +6,7 @@ import com.workflow.entity.enums.TaskStatus;
 import com.workflow.exception.InvalidRequestException;
 import com.workflow.exception.InvalidStateTransitionException;
 import com.workflow.exception.ResourceNotFoundException;
+import com.workflow.exception.TaskNotFoundException;
 import com.workflow.repository.EmployeeRepository;
 import com.workflow.repository.TaskRepository;
 import com.workflow.service.TaskService;
@@ -90,7 +91,7 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public Task getTask(Long taskId) {
         return taskRepository.findById(taskId)
-                .orElseThrow(() -> new ResourceNotFoundException("Task not found: " + taskId));
+                .orElseThrow(() -> new TaskNotFoundException(taskId));
     }
 
     private Employee getEmployee(Long employeeId) {

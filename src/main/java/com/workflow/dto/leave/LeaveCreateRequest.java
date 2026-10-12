@@ -13,9 +13,11 @@ public class LeaveCreateRequest {
     private Long employeeId;
 
     @NotNull(message = "Start date is required")
+    @FutureOrPresent(message = "Start date cannot be in the past")
     private LocalDate startDate;
 
     @NotNull(message = "End date is required")
+    @FutureOrPresent(message = "End date cannot be in the past")
     private LocalDate endDate;
 
     @NotBlank(message = "Reason is required")

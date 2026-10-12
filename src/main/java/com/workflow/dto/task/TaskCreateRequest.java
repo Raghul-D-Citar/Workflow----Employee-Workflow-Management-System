@@ -4,6 +4,7 @@ import com.workflow.entity.Task;
 import com.workflow.entity.enums.TaskPriority;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
@@ -20,6 +21,7 @@ public class TaskCreateRequest {
 
     private TaskPriority priority = TaskPriority.MEDIUM;
 
+    @FutureOrPresent(message = "Due date cannot be in the past")
     private LocalDate dueDate;
 
     @NotNull(message = "Creator ID is required")

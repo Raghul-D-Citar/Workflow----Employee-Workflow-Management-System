@@ -235,5 +235,20 @@ Use Maven to start the application:
     - End-to-end registration, duplicate rejection, and login flow.
 - **Current status**: Complete.
 
+### Phase 7 — Validation and Centralized Exception Handling
+- **Objective**: Validate incoming API requests and return consistent, safe error responses.
+- **What was implemented**:
+  - Applied Jakarta Bean Validation constraints to request DTOs for required fields, formats, sizes, and future-valid dates.
+  - Added validation for leave start/end dates and task due dates so past dates are rejected at the API boundary.
+  - Added domain-specific not-found and workflow exceptions for employees, leave requests, tasks, insufficient leave balance, and invalid leave transitions.
+  - Added `UnauthorizedActionException` for unauthorized business operations.
+  - Extended `GlobalExceptionHandler` to handle business errors, validation failures, constraint violations, and malformed request bodies.
+  - Ensured unexpected server errors return a generic message rather than exception details or stack traces.
+  - Added controller tests for missing fields, invalid dates, nonexistent resources, invalid workflow transitions, and forbidden business operations.
+- **Error response format**:
+  - Responses include `timestamp`, `status`, `error`, `message`, and `path`.
+  - Validation responses additionally include `validationErrors` when field-level errors are available.
+- **Current status**: Complete.
+
 ## 17. Future Enhancements
 *(To be defined)*

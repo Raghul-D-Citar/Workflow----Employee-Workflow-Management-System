@@ -8,6 +8,7 @@ import com.workflow.entity.enums.TaskStatus;
 import com.workflow.exception.GlobalExceptionHandler;
 import com.workflow.exception.InvalidStateTransitionException;
 import com.workflow.exception.ResourceNotFoundException;
+import com.workflow.exception.UnauthorizedActionException;
 import com.workflow.service.TaskService;
 import org.mockito.Mockito;
 import org.springframework.http.MediaType;
@@ -16,7 +17,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.time.LocalDate;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -75,6 +75,25 @@ public class TaskControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.validationErrors").exists());
+    }
+
+    @Test
+    public void createTaskRejectsPastDueDate() throws Exception {
+        String invalid = """
+                {
+                    "title": "Task Title",
+                    "description": "Description",
+                    "dueDate": "2020-01-01",
+                    "creatorId": 1
+                }
+                """;
+
+        mockMvc.perform(post("/api/tasks")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalid))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.validationErrors.dueDate").value("Due date cannot be in the past"));
     }
 
     @Test
@@ -162,6 +181,22 @@ public class TaskControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.message").value("Invalid task status transition from CREATED to COMPLETED"));
+    }
+
+    @Test
+    public void unauthorizedBusinessOperationReturnsForbidden() throws Exception {
+        when(taskService.updateTaskStatus(eq(100L), eq(TaskStatus.COMPLETED)))
+                .thenThrow(new UnauthorizedActionException("You are not allowed to update this task"));
+
+        mockMvc.perform(put("/api/tasks/100/status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"status": "COMPLETED"}
+                                """))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status").value(403))
+                .andExpect(jsonPath("$.error").value("Forbidden"))
+                .andExpect(jsonPath("$.message").value("You are not allowed to update this task"));
     }
 
     @Test

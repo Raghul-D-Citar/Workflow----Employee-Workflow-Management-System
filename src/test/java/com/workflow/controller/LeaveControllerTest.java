@@ -77,6 +77,26 @@ public class LeaveControllerTest {
     }
 
     @Test
+    public void createLeaveRequestRejectsPastDates() throws Exception {
+        String invalid = """
+                {
+                    "employeeId": 1,
+                    "startDate": "2020-01-01",
+                    "endDate": "2020-01-02",
+                    "reason": "Vacation"
+                }
+                """;
+
+        mockMvc.perform(post("/api/leaves")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalid))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.validationErrors.startDate").value("Start date cannot be in the past"))
+                .andExpect(jsonPath("$.validationErrors.endDate").value("End date cannot be in the past"));
+    }
+
+    @Test
     public void getMyLeaveRequestsSuccess() throws Exception {
         LeaveRequest leave = sampleLeaveRequest(10L, 1L, LeaveStatus.PENDING);
         when(leaveService.getOwnLeaveRequests(1L)).thenReturn(List.of(leave));
