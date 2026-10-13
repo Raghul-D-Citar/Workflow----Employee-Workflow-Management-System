@@ -75,7 +75,91 @@ Use Maven to start the application:
 ./mvnw spring-boot:run
 ```
 
-## 16. Development Phases
+## 16. Creating Development Users
+The application supports these roles:
+
+| Role | Typical access |
+|------|----------------|
+| `EMPLOYEE` | View profile, submit leave requests, view assigned tasks, and update assigned task status |
+| `MANAGER` | Review leave requests, view team data, create tasks, assign tasks, and manage team tasks |
+| `ADMIN` | Manager capabilities plus employee administration |
+
+For local development, users can be created through `POST /api/auth/register`. The following PowerShell script creates one user for each role. Change the passwords before using these accounts outside local development.
+
+Run the application first, then execute:
+
+```powershell
+$baseUrl = "http://localhost:8081"
+
+try {
+    Invoke-RestMethod -Uri "$baseUrl/api/health" -Method Get | Out-Null
+}
+catch {
+    throw "WorkFlow is not reachable at $baseUrl. Start Spring Boot on this port before creating users."
+}
+
+function New-WorkflowUser {
+    param(
+        [string]$Username,
+        [string]$Email,
+        [string]$Password,
+        [string]$FirstName,
+        [string]$LastName,
+        [string]$Role
+    )
+
+    $body = @{
+        username  = $Username
+        email     = $Email
+        password  = $Password
+        firstName = $FirstName
+        lastName  = $LastName
+        role      = $Role
+    } | ConvertTo-Json
+
+    Invoke-RestMethod `
+        -Uri "$baseUrl/api/auth/register" `
+        -Method Post `
+        -ContentType "application/json" `
+        -Body $body
+}
+
+New-WorkflowUser `
+    -Username "employee.demo" `
+    -Email "employee.demo@example.com" `
+    -Password "Employee@123" `
+    -FirstName "Demo" `
+    -LastName "Employee" `
+    -Role "EMPLOYEE"
+
+New-WorkflowUser `
+    -Username "manager.demo" `
+    -Email "manager.demo@example.com" `
+    -Password "Manager@123" `
+    -FirstName "Demo" `
+    -LastName "Manager" `
+    -Role "MANAGER"
+
+New-WorkflowUser `
+    -Username "admin.demo" `
+    -Email "admin.demo@example.com" `
+    -Password "Admin@123" `
+    -FirstName "Demo" `
+    -LastName "Administrator" `
+    -Role "ADMIN"
+```
+
+You can then sign in through the frontend at `http://localhost:8081/` using:
+
+| Role | Username | Password |
+|------|----------|----------|
+| Employee | `employee.demo` | `Employee@123` |
+| Manager | `manager.demo` | `Manager@123` |
+| Admin | `admin.demo` | `Admin@123` |
+
+If the application is running on another port, update `$baseUrl` and the frontend URL accordingly. Registration is intended for development setup here; production deployments should restrict who can create privileged roles.
+
+## 17. Development Phases
 
 ### Phase 0 — Architecture and Project Foundation
 - **Objective**: Establish the core Spring Boot project, define package structure, and configure database connections.
@@ -283,5 +367,31 @@ Use Maven to start the application:
   - No coverage percentage is claimed because coverage collection was not configured or measured.
 - **Current status**: Complete.
 
-## 17. Future Enhancements
+### Phase 9 — JavaScript Frontend
+- **Objective**: Add a lightweight HTML, CSS, and JavaScript frontend using the existing REST API without introducing React.
+- **Frontend structure**:
+  - `src/main/resources/static/index.html`: login form and role-aware dashboard markup.
+  - `src/main/resources/static/styles.css`: responsive, utility-focused styling.
+  - `src/main/resources/static/app.js`: authentication, API client, rendering, form handling, and dashboard actions.
+- **API integration**:
+  - The Fetch API calls the existing authentication, employee, leave, and task endpoints.
+  - Requests automatically include `Authorization: Bearer <JWT>` after login.
+  - Backend validation and authorization remain authoritative; frontend checks are only for usability.
+  - API validation and authorization errors are displayed to the user, including field-level validation messages when returned.
+- **Authentication flow**:
+  - Users sign in through `POST /api/auth/login`.
+  - The returned authentication response is stored in browser `localStorage` under `workflow.auth`.
+  - The token is restored on page reload and removed on sign out or HTTP 401.
+- **Dashboards**:
+  - Employees can view their profile, submit leave, review leave history, view assigned tasks, and advance task status.
+  - Managers can view team employees, pending leave requests, approve/reject leave, create tasks, assign tasks, and view team tasks.
+  - Administrators receive manager functionality plus employee creation.
+  - Role-based visibility is a UX feature only; API security remains enforced by Spring Security.
+- **How to run**:
+  - Start the application with `mvnw.cmd spring-boot:run`.
+  - Open `http://localhost:8080/` in a browser.
+  - Configure the backend database and JWT environment variables as described above.
+- **Current status**: Complete.
+
+## 18. Future Enhancements
 *(To be defined)*

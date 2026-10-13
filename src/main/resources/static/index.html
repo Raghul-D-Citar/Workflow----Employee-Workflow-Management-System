@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>WorkFlow</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/app.js" defer></script>
+</head>
+<body>
+<main class="shell">
+    <section id="login-view" class="auth-card">
+        <p class="eyebrow">WORKFLOW</p>
+        <h1>Employee workflow management</h1>
+        <p class="muted">Sign in to manage leave and tasks.</p>
+        <form id="login-form" novalidate>
+            <label for="login-username">Username or email</label>
+            <input id="login-username" name="username" required autocomplete="username">
+            <label for="login-password">Password</label>
+            <input id="login-password" name="password" type="password" required autocomplete="current-password">
+            <button type="submit">Sign in</button>
+        </form>
+        <p id="login-error" class="error" role="alert"></p>
+    </section>
+
+    <section id="app-view" hidden>
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">WORKFLOW</p>
+                <h1 id="welcome-title">Dashboard</h1>
+            </div>
+            <button id="logout-button" class="secondary">Sign out</button>
+        </header>
+        <div id="global-message" class="message" role="status"></div>
+
+        <section class="grid">
+            <article class="card">
+                <h2>My profile</h2>
+                <div id="profile" class="profile"></div>
+            </article>
+
+            <article class="card employee-only">
+                <h2>Request leave</h2>
+                <form id="leave-form" novalidate>
+                    <label for="leave-start">Start date</label>
+                    <input id="leave-start" type="date" required>
+                    <label for="leave-end">End date</label>
+                    <input id="leave-end" type="date" required>
+                    <label for="leave-reason">Reason</label>
+                    <textarea id="leave-reason" maxlength="500" required></textarea>
+                    <button type="submit">Submit request</button>
+                </form>
+            </article>
+
+            <article class="card employee-only">
+                <h2>My leave history</h2>
+                <div id="leave-history" class="list"></div>
+            </article>
+
+            <article class="card employee-only">
+                <h2>My assigned tasks</h2>
+                <div id="my-tasks" class="list"></div>
+            </article>
+
+            <article class="card manager-only">
+                <h2>Team employees</h2>
+                <div id="team-employees" class="list"></div>
+            </article>
+
+            <article class="card manager-only">
+                <h2>Pending leave requests</h2>
+                <div id="pending-leaves" class="list"></div>
+            </article>
+
+            <article class="card manager-only">
+                <h2>Create task</h2>
+                <form id="task-form" novalidate>
+                    <label for="task-title">Title</label>
+                    <input id="task-title" maxlength="100" required>
+                    <label for="task-description">Description</label>
+                    <textarea id="task-description" maxlength="1000" required></textarea>
+                    <label for="task-priority">Priority</label>
+                    <select id="task-priority">
+                        <option>LOW</option><option selected>MEDIUM</option><option>HIGH</option>
+                    </select>
+                    <label for="task-due-date">Due date</label>
+                    <input id="task-due-date" type="date">
+                    <button type="submit">Create task</button>
+                </form>
+            </article>
+
+            <article class="card manager-only">
+                <h2>Team tasks</h2>
+                <div id="team-tasks" class="list"></div>
+            </article>
+
+            <article class="card admin-only">
+                <h2>Create employee</h2>
+                <form id="employee-form" novalidate>
+                    <label for="employee-username">Username</label>
+                    <input id="employee-username" required minlength="3">
+                    <label for="employee-email">Email</label>
+                    <input id="employee-email" type="email" required>
+                    <label for="employee-password">Temporary password</label>
+                    <input id="employee-password" type="password" required minlength="4">
+                    <label for="employee-first-name">First name</label>
+                    <input id="employee-first-name" required>
+                    <label for="employee-last-name">Last name</label>
+                    <input id="employee-last-name" required>
+                    <label for="employee-role">Role</label>
+                    <select id="employee-role"><option>EMPLOYEE</option><option>MANAGER</option><option>ADMIN</option></select>
+                    <button type="submit">Create employee</button>
+                </form>
+            </article>
+        </section>
+    </section>
+</main>
+</body>
+</html>

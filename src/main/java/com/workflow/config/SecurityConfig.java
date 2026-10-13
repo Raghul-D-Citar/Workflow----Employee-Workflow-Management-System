@@ -56,7 +56,8 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 // Public endpoints
-                .requestMatchers("/api/auth/**", "/api/health").permitAll()
+                .requestMatchers("/", "/index.html", "/styles.css", "/app.js",
+                        "/api/auth/**", "/api/health").permitAll()
 
                 // Employee operations
                 .requestMatchers(HttpMethod.POST, "/api/employees").hasRole("ADMIN")
