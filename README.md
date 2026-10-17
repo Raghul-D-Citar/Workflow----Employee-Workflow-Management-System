@@ -70,9 +70,60 @@ Configuration is managed via Spring profiles (e.g., `dev`) and environment varia
 - `DB_PASSWORD`: Database password
 
 ## 15. Running the Application
-Use Maven to start the application:
-```bash
-./mvnw spring-boot:run
+For the local Windows setup, start Docker Desktop first. Then create or start the PostgreSQL container:
+
+```powershell
+docker start workflow-postgres
+```
+
+If the container does not exist, create it instead:
+
+```powershell
+docker run --name workflow-postgres `
+    -e POSTGRES_DB=workflow_db `
+    -e POSTGRES_USER=postgres `
+    -e POSTGRES_PASSWORD=postgres `
+    -p 15432:5432 `
+    -v workflow-postgres-data:/var/lib/postgresql `
+    -d postgres
+```
+
+The application uses host port `15432` because another PostgreSQL installation may already use host port `5432`.
+
+In a new PowerShell window, configure the database connection and start Spring Boot on port `8081`:
+
+```powershell
+$env:DB_URL = "jdbc:postgresql://localhost:15432/workflow_db"
+$env:DB_USERNAME = "postgres"
+$env:DB_PASSWORD = "postgres"
+
+.\mvnw.cmd spring-boot:run `
+    "-Dspring-boot.run.jvmArguments=-Duser.timezone=UTC" `
+    "-Dspring-boot.run.arguments=--server.port=8081"
+```
+
+Keep this terminal open while using the application. Verify the health endpoint from another PowerShell window:
+
+```powershell
+Invoke-WebRequest http://localhost:8081/api/health
+```
+
+To open Swagger UI from PowerShell, use `Start-Process`; do not type the URL as if it were a command:
+
+```powershell
+Start-Process "http://localhost:8081/swagger-ui.html"
+```
+
+The OpenAPI JSON document is available at:
+
+```powershell
+Invoke-WebRequest http://localhost:8081/v3/api-docs
+```
+
+The shorter Maven command below works when the database is already available, the required environment variables are set, and port `8080` is free:
+
+```powershell
+.\mvnw.cmd spring-boot:run
 ```
 
 ## 16. Creating Development Users
@@ -393,5 +444,24 @@ If the application is running on another port, update `$baseUrl` and the fronten
   - Configure the backend database and JWT environment variables as described above.
 - **Current status**: Complete.
 
-## 18. Future Enhancements
+### Phase 11 — API Documentation
+- **Objective**: Document the REST API and make authenticated endpoints easy to explore.
+- **What was implemented**:
+  - Added OpenAPI 3 documentation with Springdoc Swagger UI.
+  - Documented authentication, employee, leave, task, and health endpoints.
+  - Exposed request and response DTO schemas through the generated OpenAPI document.
+  - Added a Bearer JWT security scheme so protected operations clearly show their authentication requirement.
+  - Kept Swagger UI and the OpenAPI JSON endpoint publicly accessible without changing API business behavior.
+- **Documentation URLs**:
+  - Swagger UI: `http://localhost:8081/swagger-ui.html`
+  - OpenAPI JSON: `http://localhost:8081/v3/api-docs`
+  - If the application uses another port, replace `8081` in these URLs.
+- **Using JWT in Swagger UI**:
+  1. Call `POST /api/auth/login` and copy the `token` from the response.
+  2. Select **Authorize** in Swagger UI.
+  3. Enter `Bearer <token>` and select **Authorize**.
+  4. Swagger UI will send the JWT with protected requests.
+- **Current status**: Complete.
+
+## 19. Future Enhancements
 *(To be defined)*

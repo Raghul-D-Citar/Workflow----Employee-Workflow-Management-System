@@ -57,7 +57,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Public endpoints
                 .requestMatchers("/", "/index.html", "/styles.css", "/app.js",
-                        "/api/auth/**", "/api/health").permitAll()
+                        "/api/auth/**", "/api/health",
+                        "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
 
                 // Employee operations
                 .requestMatchers(HttpMethod.POST, "/api/employees").hasRole("ADMIN")
